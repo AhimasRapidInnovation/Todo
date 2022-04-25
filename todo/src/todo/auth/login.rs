@@ -1,10 +1,18 @@
-use actix_web::{get,Responder};
+use actix_web::{post,Responder, web};
+use super::Conn;
+use serde::Deserialize;
 
 
 
-#[get("/login")]
-async fn login() -> impl Responder 
+
+pub(crate) async fn login_user(conn : web::Data<Conn>, user: web::Json<super::Login>) -> impl Responder 
+{
+    eprintln!("user {:?}", user);
+    "Logging in ".to_string()
+}
+
+pub(crate) async fn logout_user(conn : web::Data<Conn>) -> impl Responder 
 {
 
-    "Logging in ".to_string()
+    "Logging out ".to_string()
 }

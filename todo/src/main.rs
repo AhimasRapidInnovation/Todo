@@ -7,7 +7,7 @@ use std::sync::Arc;
 use todo::auth::{JwtToken};
 use todo::{db::Conn};
 
-use actix_web::{web, App,HttpServer,HttpRequest, Responder};
+use actix_web::{web, App,HttpServer,HttpRequest, Responder, HttpResponse};
 use dotenv::dotenv;
 use env_logger;
 
@@ -27,8 +27,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
         move || {
                             App::new()
                             .app_data(web::Data::new(db.clone()))
+                            .route("/",web::get().to(|| async move {HttpResponse::Ok()}))
+                            .service(todo::configure_auth())
             
         }
-    );
+    ).bind(("127.0.0.1", 8080))?
+    .run()
+    .await;
     Ok(())
 }

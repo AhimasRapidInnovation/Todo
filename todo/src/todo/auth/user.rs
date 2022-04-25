@@ -1,13 +1,11 @@
 use serde::{Serialize,Deserialize};
 
 
-
-struct Login{
-    username : String,
-    password :  String,
-    
+#[derive(Debug, Deserialize)]
+pub struct Login{
+    pub username : String,
+    pub password :  String,
 }
-
 
 
 #[derive(Serialize,Deserialize)]
