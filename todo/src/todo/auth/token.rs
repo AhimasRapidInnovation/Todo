@@ -5,6 +5,9 @@ use std::collections::BTreeMap;
 use sha2::Sha256;
 use hmac::{ Hmac,Mac};
 use jwt::{SignWithKey, VerifyWithKey, Token};
+use actix_web::{error::Error, FromRequest};
+
+use std::{pin::Pin, future::Future};
 
 
 type HamcSha256 = Hmac<Sha256>; 
@@ -21,6 +24,24 @@ pub(crate) struct JwtToken {
 }
 
 
+impl FromRequest for JwtToken {
+
+   type Error = Error;
+   type Future = Pin<Box<dyn Future<Output = Result<Self,Error>>>>;
+
+    fn from_request(req: &actix_web::HttpRequest, payload: &mut actix_web::dev::Payload) -> Self::Future 
+    {
+        //  TODO
+        // 
+        Box::pin( async move {
+            Ok(JwtToken::new("1234".into()))
+        })
+    }
+
+
+
+
+}
 
 struct TokenGenerator {
     secret :  String,
@@ -38,7 +59,7 @@ impl JwtToken {
         Self {user_id: user_id, tok:tok} 
     }
 
-    fn decode(token: String) -> Self {
+    pub fn decode(token: String) -> Self {
         let secret_key = HamcSha256::new_from_slice(SECRET.as_bytes()).unwrap();
         let claims : BTreeMap<String,String> = token.verify_with_key(&secret_key).unwrap();
         Self {user_id: claims["user_id"].to_string(), tok: token.to_string()}
