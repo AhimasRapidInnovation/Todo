@@ -1,8 +1,9 @@
 use serde::{Serialize,Deserialize};
 
-
+// # LoginUser 
+// Login to the system with this structure
 #[derive(Debug, Deserialize)]
-pub struct Login{
+pub struct LoginUser{
     pub username : String,
     pub password :  String,
 }

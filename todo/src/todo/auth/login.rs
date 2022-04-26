@@ -4,14 +4,56 @@ use serde::Deserialize;
 use serde_json::json;
 use mongodb::bson::doc;
 use log::{info, debug,warn};
+use futures::stream::{StreamExt, TryStreamExt};
 
 const USER_TABLE : &'static str = "users";
 
 
-pub(crate) async fn login_user(conn : web::Data<Conn>, user: web::Json<super::Login>) -> impl Responder 
+pub(crate) async fn login_user(conn : web::Data<Conn>, user: web::Json<super::LoginUser>) -> impl Responder 
 {
-    eprintln!("user {:?}", user);
-    "Logging in ".to_string()
+    info!("Login user is invoked for {}", user.username);
+    let user_collection = conn.collection::<crate::todo::UserModel>(USER_TABLE);
+    // Check is user already exist ?
+    let user_res = match user_collection.find(doc!{"name": user.username.clone()}, None).await{
+            Ok(cur) => cur.collect::<Vec<_>>().await,
+            Err(e) => {
+                warn!("error:  {}", e);
+                return HttpResponse::InternalServerError().json(json!({"status": "Internal Server Error", "Err": e.to_string()}));
+            }
+    };
+    if user_res.len() == 0{
+        warn!("error: user does not exist");
+        return HttpResponse::NotFound().json(json!({"status": "Not Found", "Err": "User does not exist"}))
+
+    } else if user_res.len() > 1 {
+        warn!("error: Multiple user exist for {:?}", user.username);
+        return HttpResponse::Conflict().json(json!({"status": "Conflict"}))
+    }
+    let db_user = match &user_res[0]{
+        Ok(user_model) => user_model,
+        Err(e) => {
+            warn!("error: {}", e);
+            return HttpResponse::InternalServerError().json(json!({"status": "Internal Server Error", "Err": e.to_string()}));
+        }
+    };
+    match db_user.verify_password(user.password.as_str()){
+        Ok(val) => {
+            if !val {
+                warn!("error: invalid password");
+                return HttpResponse::Unauthorized().json(json!({"status": "Failed", "Err": "Invalid Password"}))
+            } else {
+               let user_id = db_user.id.unwrap().to_hex();
+               let token = super::JwtToken::new(user_id);
+               info!("Logged in sucessful");
+               return HttpResponse::Ok().json(json!({"bearer-token" : token.tok}));
+            }
+        }
+        Err(e) => {
+             warn!("error: bcrypt error {}", e);
+            return HttpResponse::InternalServerError().json(json!({"status": "Internal Server Error", "Err": e.to_string()}));
+        }
+    }
+    
 }
 
 pub(crate) async fn logout_user(conn : web::Data<Conn>) -> impl Responder 

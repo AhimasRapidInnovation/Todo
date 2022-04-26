@@ -2,7 +2,7 @@
 
 use mongodb::bson::{oid::ObjectId};
 use serde::{Serialize,Deserialize};
-use bcrypt::{hash, DEFAULT_COST,BcryptError};
+use bcrypt::{hash, DEFAULT_COST,BcryptError, verify};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct UserModel {
@@ -19,6 +19,10 @@ impl UserModel {
         let hashed_password = hash(password.as_str(), DEFAULT_COST)?;
         Ok(Self{id: None, name: name, password: hashed_password})
     }
+
+    pub fn verify_password(&self, plain_password: &str) -> Result<bool, BcryptError>{
+        verify(plain_password, self.password.as_str())
+    }
 }
 
 pub struct TodoItem{
@@ -27,4 +31,21 @@ pub struct TodoItem{
     // user_id
     // is_done
     // created date and time
+}
+
+
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_usermodel() {
+        let user1 = UserModel::new("Thomas Muller".into(), "fc-bayern".into());
+        assert!(user1.is_ok());
+        let res = user1.as_ref().unwrap().verify_password("fc-bayern".into());
+        assert!(res.is_ok());
+        assert!(res.unwrap());
+    }
 }

@@ -6,7 +6,7 @@ use sha2::Sha256;
 use hmac::{ Hmac,Mac};
 use jwt::{SignWithKey, VerifyWithKey, Token};
 use actix_web::{error::Error, FromRequest};
-
+use serde::{Serialize,Deserialize};
 use std::{pin::Pin, future::Future};
 
 
@@ -17,10 +17,10 @@ type HamcSha256 = Hmac<Sha256>;
 // try to get from env
 const SECRET : &'static str = "super-secret";
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize,Deserialize)]
 pub(crate) struct JwtToken {
-    user_id : String,
-    tok :  String,
+    pub user_id : String,
+    pub tok :  String,
 }
 
 
