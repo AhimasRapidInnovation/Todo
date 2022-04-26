@@ -9,6 +9,9 @@ use actix_web::{App, web};
 use auth::login;
 use structs::{
     UserModel,
+    SessionModel,
+    SESSION_TABLE,
+    USER_TABLE,
 };
 
 pub(super) fn configure_auth() -> actix_web::Scope{

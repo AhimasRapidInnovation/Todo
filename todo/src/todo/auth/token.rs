@@ -52,7 +52,7 @@ impl JwtToken {
         let mut claims = BTreeMap::new();
         claims.insert("user_id", user_id.clone());
         let tok = claims.sign_with_key(&secret_key).unwrap();
-        Self {user_id: user_id, tok:tok} 
+        Self {user_id: user_id, tok} 
     }
 
     pub fn decode(token: String) -> Self {

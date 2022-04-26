@@ -1,12 +1,16 @@
 use actix_web::{post,Responder, web, HttpResponse};
-use super::{Conn};
+use super::{
+            Conn, 
+            USER_TABLE, 
+            SESSION_TABLE
+};
 use serde::Deserialize;
 use serde_json::json;
 use mongodb::bson::doc;
 use log::{info, debug,warn};
 use futures::stream::{StreamExt, TryStreamExt};
 
-const USER_TABLE : &'static str = "users";
+
 
 
 pub(crate) async fn login_user(conn : web::Data<Conn>, user: web::Json<super::LoginUser>) -> impl Responder 
@@ -43,8 +47,19 @@ pub(crate) async fn login_user(conn : web::Data<Conn>, user: web::Json<super::Lo
                 return HttpResponse::Unauthorized().json(json!({"status": "Failed", "Err": "Invalid Password"}))
             } else {
                let user_id = db_user.id.unwrap().to_hex();
-               let token = super::JwtToken::new(user_id);
+               let token = super::JwtToken::new(user_id.clone());
                info!("Logged in sucessful");
+               let session_collection = conn.collection::<super::SessionModel>(SESSION_TABLE);
+               let _ = session_collection.delete_many(doc!{"user_id": &user_id}, None).await;
+               match session_collection.insert_one(super::SessionModel::new(user_id, token.tok.clone()), None).await{    
+                   Err(e) => {
+                        warn!("error: failed to create the session {}", e);
+                        return HttpResponse::InternalServerError().json(json!({"status": "Internal Server Error", "Err": e.to_string()}));
+                   },
+                   _ => {
+                       info!("session created sucessfully ");
+                   }
+               }
                return HttpResponse::Ok().json(json!({"bearer-token" : token.tok}));
             }
         }
@@ -53,7 +68,6 @@ pub(crate) async fn login_user(conn : web::Data<Conn>, user: web::Json<super::Lo
             return HttpResponse::InternalServerError().json(json!({"status": "Internal Server Error", "Err": e.to_string()}));
         }
     }
-    
 }
 
 pub(crate) async fn logout_user(conn : web::Data<Conn>) -> impl Responder 
