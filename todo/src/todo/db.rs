@@ -1,4 +1,9 @@
+
+
+use std::ops::Deref;
+
 use mongodb::{Client, options::{ClientOptions, ResolverConfig}, Database, error::Error};
+
 
 
 
@@ -12,6 +17,14 @@ impl Conn{
         let client = Client::with_options(options)?;
         let db = client.database("todo");
         Ok(Self(db))
+    }
+}
+
+impl Deref for Conn {
+    type Target = Database;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
