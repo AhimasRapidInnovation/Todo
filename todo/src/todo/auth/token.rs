@@ -37,10 +37,6 @@ impl FromRequest for JwtToken {
             Ok(JwtToken::new("1234".into()))
         })
     }
-
-
-
-
 }
 
 struct TokenGenerator {
