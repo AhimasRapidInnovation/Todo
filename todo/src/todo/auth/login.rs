@@ -70,10 +70,25 @@ pub(crate) async fn login_user(conn : web::Data<Conn>, user: web::Json<super::Lo
     }
 }
 
-pub(crate) async fn logout_user(conn : web::Data<Conn>) -> impl Responder 
+pub(crate) async fn logout_user(conn : web::Data<Conn>, current_user: Option<super::JwtToken>) -> impl Responder 
 {
 
-    "Logging out ".to_string()
+    if current_user.is_none(){
+        warn!("user session is none");
+        return HttpResponse::Unauthorized().json(json!({"status": "Failure", "Err": "Unauthorized"}))
+    }
+    let current_user = current_user.unwrap();
+    let session_collection = conn.collection::<super::SessionModel>(SESSION_TABLE);
+    match session_collection.delete_one(doc!{"user_id": current_user.user_id.clone()}, None).await{
+        Ok(delete_res) => {
+            assert!(delete_res.deleted_count == 1);
+        },
+        Err(e) => {
+            warn!("error: unable to delete session {}", e);
+            return HttpResponse::InternalServerError().json(json!({"status": "Internal Server Error", "Err": e.to_string()}))
+        }
+    };
+    HttpResponse::Ok().json(json!({"status":"success"}))
 }
 
 pub(crate) async fn create_user(conn : web::Data<Conn>, user: web::Json<super::CreateUser>) -> impl Responder

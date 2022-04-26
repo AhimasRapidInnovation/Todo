@@ -7,7 +7,7 @@ use mongodb::{Client, options::{ClientOptions, ResolverConfig}, Database, error:
 
 
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub(crate) struct Conn(pub Database);
 
 

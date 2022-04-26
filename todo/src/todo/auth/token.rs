@@ -7,7 +7,7 @@ use sha2::Sha256;
 use mongodb::bson::doc;
 use hmac::{ Hmac,Mac};
 use jwt::{SignWithKey, VerifyWithKey, Token};
-use actix_web::{error::Error, FromRequest, HttpResponse,error};
+use actix_web::{error::Error, FromRequest, HttpResponse,error, web};
 use serde::{Serialize,Deserialize};
 use log::{warn,debug};
 use serde_json::json;
@@ -45,7 +45,7 @@ impl FromRequest for JwtToken {
 
     fn from_request(req: &actix_web::HttpRequest, payload: &mut actix_web::dev::Payload) -> Self::Future 
     { 
-        let conn = req.app_data::<Conn>().unwrap();
+        let conn = req.app_data::<web::Data<Conn>>().unwrap();
         let session_collection = conn.collection::<SessionModel>(SESSION_TABLE);
         let header = req.headers();
         if !header.contains_key(TOKEN_HEADER){
