@@ -81,6 +81,44 @@ pub async fn update(current_user: Option<super::JwtToken>) -> impl Responder {
     "Updated sucessfully"
 }
 
+pub async fn complete(
+    conn: web::Data<Conn>,
+    current_user: Option<super::JwtToken>,
+    complete_id: web::Path<String>,
+) -> impl Responder {
+    info!("complete is called for {:?}", current_user);
+    if current_user.is_none() {
+        warn!("user session is none");
+        return HttpResponse::Unauthorized();
+    }
+    let complete_id = complete_id.into_inner();
+    let object_id: bson::oid::ObjectId = match bson::oid::ObjectId::parse_str(&complete_id) {
+        Ok(id) => id,
+        Err(e) => {
+            warn!("error: Invalid complete id");
+            return HttpResponse::Conflict();
+        }
+    };
+    match conn
+        .collection::<super::TodoItem>(super::TODOS_TABLE)
+        .update_one(
+            doc! {"_id": object_id},
+            doc! {"$set" : {"is_done": true}},
+            None,
+        )
+        .await
+    {
+        Ok(update_res) => {
+            assert!(update_res.modified_count == 1);
+            return HttpResponse::Ok();
+        }
+        Err(e) => {
+            warn!("error: unable to complete due to {}", e);
+            return HttpResponse::InternalServerError();
+        }
+    }
+}
+
 pub async fn delete(
     conn: web::Data<Conn>,
     delete_id: web::Path<String>,

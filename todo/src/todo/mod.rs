@@ -24,4 +24,8 @@ pub(super) fn configure_todo() -> actix_web::Scope {
         .route("/create", web::post().to(handlers::create))
         .route("/update", web::post().to(handlers::update))
         .route("/delete/{delete_id}", web::post().to(handlers::delete))
+        .route(
+            "/complete/{complete_id}",
+            web::post().to(handlers::complete),
+        )
 }
