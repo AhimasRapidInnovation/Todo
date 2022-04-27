@@ -8,14 +8,7 @@ use actix_web::{web, App};
 use auth::{login, JwtToken};
 pub(crate) use db::Conn;
 
-use structs::{
-        SessionModel, 
-        UserModel, 
-        SESSION_TABLE, 
-        USER_TABLE, 
-        TodoItem,
-        TODOS_TABLE,
-};
+use structs::{SessionModel, TodoItem, UserModel, SESSION_TABLE, TODOS_TABLE, USER_TABLE};
 
 pub(super) fn configure_auth() -> actix_web::Scope {
     web::scope("/auth")
@@ -26,10 +19,9 @@ pub(super) fn configure_auth() -> actix_web::Scope {
 }
 
 pub(super) fn configure_todo() -> actix_web::Scope {
-
     web::scope("")
-        .route("/", web::get().to(handlers::todos))
+        .route("/todos", web::get().to(handlers::todos))
         .route("/create", web::post().to(handlers::create))
         .route("/update", web::post().to(handlers::update))
-        .route("/delete", web::post().to(handlers::delete))
+        .route("/delete/{delete_id}", web::post().to(handlers::delete))
 }
