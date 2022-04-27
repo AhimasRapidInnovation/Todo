@@ -8,4 +8,4 @@ use super::{SessionModel, SESSION_TABLE, USER_TABLE};
 use user::{CreateUser, LoginUser};
 
 use crate::todo::UserModel;
-pub(crate) use token::JwtToken;
+pub use token::JwtToken;

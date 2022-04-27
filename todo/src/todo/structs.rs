@@ -4,6 +4,10 @@ use serde::{Deserialize, Serialize};
 
 pub const USER_TABLE: &'static str = "users";
 pub const SESSION_TABLE: &'static str = "session";
+pub const TODOS_TABLE : &str = "todos";
+
+
+
 
 #[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct UserModel {
@@ -46,12 +50,24 @@ impl SessionModel {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TodoItem {
-    title: String,
-    notes: String,
-    // user_id
-    // is_done
-    // created date and time
+    
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<ObjectId>,
+    // Title of the to do item
+    pub title: String,
+    
+    // Actual content of the todo 
+    pub notes: String,
+    
+    // For which user usually ObjectId.to_hex()
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub user_id : Option<String>,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub is_done  : Option<bool>,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub created_at : Option<bson::DateTime>
 }
 
 #[cfg(test)]

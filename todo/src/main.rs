@@ -4,7 +4,6 @@ mod todo;
 
 use std::sync::Arc;
 
-use todo::auth::JwtToken;
 use todo::db::Conn;
 
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
@@ -21,8 +20,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(db.clone()))
-            .route("/", web::get().to(|| async move { HttpResponse::Ok() }))
+            // .route("/", web::get().to(|| async move { HttpResponse::Ok() }))
             .service(todo::configure_auth())
+            .service(todo::configure_todo())
     })
     .bind(("127.0.0.1", 8080))?
     .run()

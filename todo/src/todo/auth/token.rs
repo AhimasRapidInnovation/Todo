@@ -19,7 +19,7 @@ const SECRET: &'static str = "super-secret";
 const TOKEN_HEADER: &'static str = "bearer-token";
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub(crate) struct JwtToken {
+pub struct JwtToken {
     pub user_id: String,
     pub tok: String,
 }

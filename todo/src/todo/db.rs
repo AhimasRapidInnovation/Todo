@@ -7,7 +7,7 @@ use mongodb::{
 };
 
 #[derive(Clone, Debug)]
-pub(crate) struct Conn(pub Database);
+pub struct Conn(pub Database);
 
 impl Conn {
     pub(crate) async fn new(uri: String) -> Result<Self, Error> {
