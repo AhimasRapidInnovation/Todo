@@ -24,7 +24,7 @@ pub(crate) async fn login_user(
                 .json(json!({"status": "Internal Server Error", "Err": e.to_string()}));
         }
     };
-    if user_res.len() == 0 {
+    if user_res.is_empty() {
         warn!("error: user does not exist");
         return HttpResponse::NotFound()
             .json(json!({"status": "Not Found", "Err": "User does not exist"}));
@@ -60,9 +60,8 @@ pub(crate) async fn login_user(
                 {
                     Err(e) => {
                         warn!("error: failed to create the session {}", e);
-                        return HttpResponse::InternalServerError().json(
-                            json!({"status": "Internal Server Error", "Err": e.to_string()}),
-                        );
+                        return HttpResponse::InternalServerError()
+                            .json(json!({"status": "Internal Server Error", "Err": e.to_string()}));
                     }
                     _ => {
                         info!("session created sucessfully ");

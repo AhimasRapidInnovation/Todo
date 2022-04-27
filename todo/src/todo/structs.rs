@@ -2,8 +2,8 @@ use bcrypt::{hash, verify, BcryptError, DEFAULT_COST};
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 
-pub const USER_TABLE: &'static str = "users";
-pub const SESSION_TABLE: &'static str = "session";
+pub const USER_TABLE: &str = "users";
+pub const SESSION_TABLE: &str = "session";
 pub const TODOS_TABLE: &str = "todos";
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -19,7 +19,7 @@ impl UserModel {
         let hashed_password = hash(password.as_str(), DEFAULT_COST)?;
         Ok(Self {
             id: None,
-            name: name,
+            name,
             password: hashed_password,
         })
     }

@@ -28,12 +28,12 @@ pub async fn todos(conn: web::Data<Conn>, current_user: Option<super::JwtToken>)
                 .into_iter()
                 .map(Result::unwrap) // never do this on prod
                 .collect::<Vec<_>>(); // WARNING : May result in memory overflow
-            return HttpResponse::Ok().json(json!(result));
+            HttpResponse::Ok().json(json!(result))
         }
         Err(e) => {
             warn!("error: unable to create todos {}", e);
-            return HttpResponse::InternalServerError()
-                .json(json!({"status": "Failed", "Err": e.to_string()}));
+            HttpResponse::InternalServerError()
+                .json(json!({"status": "Failed", "Err": e.to_string()}))
         }
     }
 }
@@ -60,12 +60,12 @@ pub async fn create(
     {
         Ok(inserted) => {
             info!("ToDo created successfully");
-            return HttpResponse::Ok().json(json!({"status":"success"}));
+            HttpResponse::Ok().json(json!({"status":"success"}))
         }
         Err(e) => {
             warn!("error: unable to create todos {}", e);
-            return HttpResponse::InternalServerError()
-                .json(json!({"status": "Failed", "Err": e.to_string()}));
+            HttpResponse::InternalServerError()
+                .json(json!({"status": "Failed", "Err": e.to_string()}))
         }
     }
 }
@@ -181,7 +181,7 @@ pub async fn delete(
         }
         Err(e) => {
             warn!("error: unable to delete due to {}", e);
-            return HttpResponse::InternalServerError();
+            HttpResponse::InternalServerError()
         }
     }
 }

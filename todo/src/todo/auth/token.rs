@@ -15,8 +15,8 @@ use super::{Conn, SessionModel, SESSION_TABLE};
 type HamcSha256 = Hmac<Sha256>;
 
 // try to get from env
-const SECRET: &'static str = "super-secret";
-const TOKEN_HEADER: &'static str = "bearer-token";
+const SECRET: &str = "super-secret";
+const TOKEN_HEADER: &str = "bearer-token";
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct JwtToken {
@@ -89,10 +89,7 @@ impl JwtToken {
         let mut claims = BTreeMap::new();
         claims.insert("user_id", user_id.clone());
         let tok = claims.sign_with_key(&secret_key).unwrap();
-        Self {
-            user_id: user_id,
-            tok,
-        }
+        Self { user_id, tok }
     }
 
     pub fn decode(token: String) -> Self {
@@ -100,7 +97,7 @@ impl JwtToken {
         let claims: BTreeMap<String, String> = token.verify_with_key(&secret_key).unwrap();
         Self {
             user_id: claims["user_id"].to_string(),
-            tok: token.to_string(),
+            tok: token,
         }
     }
 }

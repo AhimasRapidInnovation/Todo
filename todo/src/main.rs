@@ -8,7 +8,6 @@ use todo::db::Conn;
 
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use dotenv::dotenv;
-use env_logger;
 
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
