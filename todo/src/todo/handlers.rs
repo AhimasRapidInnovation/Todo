@@ -21,19 +21,13 @@ pub async fn todos(conn: web::Data<Conn>, current_user: Option<super::JwtToken>)
         .await
     {
         Ok(result_set) => {
-            // info!("");
-            // let result = match result_set.collect::<().await{
-            //     Ok(res) => res,
-            //     Err(e) => {
-            //         return HttpResponse::InternalServerError().json(json!({"status": "Failure"}))
-            //     }
-            // };
+            info!("result fetched successfully");
             let result = result_set
                 .collect::<Vec<_>>()
                 .await
                 .into_iter()
-                .map(Result::unwrap)
-                .collect::<Vec<_>>();
+                .map(Result::unwrap) // never do this on prod
+                .collect::<Vec<_>>(); // WARNING : May result in memory overflow
             return HttpResponse::Ok().json(json!(result));
         }
         Err(e) => {
@@ -76,9 +70,43 @@ pub async fn create(
     }
 }
 
-pub async fn update(current_user: Option<super::JwtToken>) -> impl Responder {
+pub async fn update(
+    conn: web::Data<Conn>,
+    current_user: Option<super::JwtToken>,
+    update_id: web::Path<String>,
+    update: web::Json<super::TodoUpdate>,
+) -> impl Responder {
     info!("Update handler called for {:?}", current_user);
-    "Updated sucessfully"
+    if current_user.is_none() {
+        warn!("user session is none");
+        return HttpResponse::Unauthorized();
+    }
+    let update_id = update_id.into_inner();
+    let object_id: bson::oid::ObjectId = match bson::oid::ObjectId::parse_str(&update_id) {
+        Ok(id) => id,
+        Err(e) => {
+            warn!("error: Invalid update id");
+            return HttpResponse::Conflict();
+        }
+    };
+    match conn
+        .collection::<super::TodoItem>(super::TODOS_TABLE)
+        .update_one(
+            doc! {"_id": object_id},
+            doc! {"$set" : {"title": &update.title, "notes": &update.notes}},
+            None,
+        )
+        .await
+    {
+        Ok(update_res) => {
+            assert!(update_res.modified_count == 1);
+            return HttpResponse::Ok();
+        }
+        Err(e) => {
+            warn!("error: unable to update due to {}", e);
+            return HttpResponse::InternalServerError();
+        }
+    }
 }
 
 pub async fn complete(

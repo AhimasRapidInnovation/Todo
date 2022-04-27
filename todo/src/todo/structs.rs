@@ -66,6 +66,12 @@ pub struct TodoItem {
     pub created_at: Option<bson::DateTime>,
 }
 
+#[derive(Deserialize)]
+pub struct TodoUpdate {
+    pub title: String,
+    pub notes: String,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
